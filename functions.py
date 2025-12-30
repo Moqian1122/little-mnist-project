@@ -16,20 +16,21 @@ def identity(x):
 
 # loss functions
 
-def mean_square_error(label, prediction, batch_size):
+def mean_square_error(label, prediction):
+    batch_size = label.shape[0]
     return (1/batch_size) * np.sum((label - prediction)**2)
 
-def cross_entropy_error(label, y):
+def cross_entropy_error(y, t):
     if y.ndim == 1:
-        y.reshape(1, y.size)
-        label.reshape(1, label.size)
+        y = y.reshape(1, y.size)
+        t = t.reshape(1, t.size)
 
-    if label.size == y.size:
-        label = np.argmax(label, axis = 1)
+    if y.size == t.size:
+        t = np.argmax(t, axis = 1)
 
     delta = 1e-7
     batch_size = y.shape[0]
-    return -np.sum(np.log(y[np.arange(batch_size), label]) + delta) / batch_size
+    return -np.sum(np.log(y[np.arange(batch_size), t]) + delta) / batch_size
 
 # accuracy functions
 
@@ -38,8 +39,28 @@ def accuracy(label, prediction):
 
 # gradient functions (numeric(al) derivation applies.)
 
-def gradient(x):
-    grads = []
+def numerical_gradient(x: np.ndarray, f):
+    grads = np.zeros_like(x)
     h = 1e-4
     
+    it = np.nditer(x, flags=['multi_index'], op_flags=['readwrite'])
+
+    while not it.finished:
+
+        idx = it.multi_index
+
+        tmp = x[idx]
+        x[idx] = tmp + h
+        y1 = f(x)
+        x[idx] = tmp - h
+        y2 = f(x)
+        grad = (y1 - y2) / (2*h)
+        grads[idx] = grad
+        x[idx] = tmp
+
+        it.iternext()
+
     return grads
+
+def gradient_descent():
+    pass
