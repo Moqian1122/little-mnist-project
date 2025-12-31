@@ -40,7 +40,7 @@ def accuracy(label, prediction):
 # gradient functions (numeric(al) derivation applies.)
 
 def numerical_gradient(x: np.ndarray, f):
-    grads = np.zeros_like(x)
+    grad = np.zeros_like(x)
     h = 1e-4
     
     it = np.nditer(x, flags=['multi_index'], op_flags=['readwrite'])
@@ -54,13 +54,18 @@ def numerical_gradient(x: np.ndarray, f):
         y1 = f(x)
         x[idx] = tmp - h
         y2 = f(x)
-        grad = (y1 - y2) / (2*h)
-        grads[idx] = grad
+        grad_value = (y1 - y2) / (2*h)
+        grad[idx] = grad_value
         x[idx] = tmp
 
         it.iternext()
 
-    return grads
+    return grad
 
-def gradient_descent():
-    pass
+def gradient_descent(f, x, learning_rate, step_num):
+    
+    for i in range(step_num):
+        grad = numerical_gradient(x, f)
+        x -= learning_rate * grad
+
+    return x
