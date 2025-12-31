@@ -30,7 +30,7 @@ def cross_entropy_error(y, t):
 
     delta = 1e-7
     batch_size = y.shape[0]
-    return -np.sum(np.log(y[np.arange(batch_size), t]) + delta) / batch_size
+    return round(-np.sum(np.log(y[np.arange(batch_size), t] + delta)) / batch_size, 4)
 
 # accuracy functions
 
@@ -43,7 +43,7 @@ def numerical_gradient(x: np.ndarray, f):
     grad = np.zeros_like(x)
     h = 1e-4
     
-    it = np.nditer(x, flags=['multi_index'], op_flags=['readwrite'])
+    it = np.nditer(op=x, flags=['multi_index'], op_flags=['readwrite'])
 
     while not it.finished:
 

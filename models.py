@@ -21,22 +21,40 @@ class SimpleNet(object):
 
 class SingleLayerNet(object):
     
-    def __init__(self, x_train, num_w1_node: int):
-        self.x_train = x_train
-        self.W1 = np.random.rand(x_train.shape[1], num_w1_node)
+    def __init__(self, num_w1_node: int) -> None:
+        self.W1 = np.random.rand(784, num_w1_node)
         self.b1 = np.ones(num_w1_node)
-        print("An object has been intiallized from the SingleLayerNet class!")
 
-    def predict(self):
-        a1 = np.dot(self.x_train, self.W1) + self.b1
+    def predict(self, x) -> tuple[np.ndarray, np.ndarray]:
+        a1 = np.dot(x, self.W1) + self.b1
         y = identity(a1)
-        self.t_predict = np.argmax(y, axis=1)
-        print("The predicted labels are ready!")
+        t_predict = np.argmax(y, axis=1)
+        return y, t_predict
 
-    def calculate_accuracy(self, t_train):
-        self.t_train = t_train
-        self.accuracy = accuracy(self.t_train, self.t_predict)
-        print("The accuracy of the prediction is: ", round(self.accuracy, 2))
+    def accuracy(self, x, t: np.ndarray) -> float:
+        _, t_predict = self.predict(x)
+        acc = accuracy(t, t_predict)
+        return round(acc, 4)
+    
+    def loss(self, x, t: np.ndarray) -> float:
+        z, _ = self.predict(x)
+        y = softmax(z)
+        return cross_entropy_error(y, t)
+
+    def gradient(self, x, t) -> tuple[np.ndarray, np.ndarray]:
+        f = lambda W: self.loss(x, t)
+        print('Be patient! This might take a while...')
+        self.W1_grad = numerical_gradient(self.W1, f)
+        self.b1_grad = numerical_gradient(self.b1, f)
+        print('The gradients are ready!')
+        return self.W1_grad, self.b1_grad
+    
+    def gradient_descent(self, x, t, learning_rate, step_num):
+        for i in range(step_num):
+            W1_grad_new, b1_grad_new = self.gradient(x, t)
+            self.W1_grad -= learning_rate * W1_grad_new
+            self.b1_grad -= learning_rate * b1_grad_new
+        return self.W1_grad, self.b1_grad
 
 class TwoLayerNet(object):
     
