@@ -9,7 +9,7 @@ def relu(x):
     return np.maximum(0, x)
 
 def softmax(x: np.ndarray) -> np.ndarray:
-    return np.exp(x - np.max(x)) / np.sum(np.exp(x - np.max(x)))
+    return np.exp(x - np.max(x, axis=-1, keepdims=True)) / np.sum(np.exp(x - np.max(x, axis=-1, keepdims=True)), axis=-1, keepdims=True)
 
 def identity(x):
     return x
@@ -30,7 +30,7 @@ def cross_entropy_error(y, t):
 
     delta = 1e-7
     batch_size = y.shape[0]
-    return round(-np.sum(np.log(y[np.arange(batch_size), t] + delta)) / batch_size, 4)
+    return -np.sum(np.log(y[np.arange(batch_size), t] + delta)) / batch_size
 
 # accuracy functions
 
@@ -40,8 +40,9 @@ def accuracy(label, prediction):
 # gradient functions (numeric(al) derivation applies.)
 
 def numerical_gradient(x: np.ndarray, f):
+    
     grad = np.zeros_like(x)
-    h = 1e-4
+    h = 1e-4 # 0.0001
     
     it = np.nditer(op=x, flags=['multi_index'], op_flags=['readwrite'])
 
@@ -54,8 +55,8 @@ def numerical_gradient(x: np.ndarray, f):
         y1 = f(x)
         x[idx] = tmp - h
         y2 = f(x)
-        grad_value = (y1 - y2) / (2*h)
-        grad[idx] = grad_value
+        grad_val = (y1 - y2) / (2*h)
+        grad[idx] = grad_val
         x[idx] = tmp
 
         it.iternext()

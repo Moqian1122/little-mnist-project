@@ -21,35 +21,35 @@ class SimpleNet(object):
 
 class SingleLayerNet(object):
     
-    def __init__(self, num_w1_node: int) -> None:
-        self.W1 = np.random.rand(784, num_w1_node)
-        self.b1 = np.ones(num_w1_node)
+    def __init__(self, num_input_node: int, num_w1_node: int, weight_init_std: float) -> None:
+        self.W1 = weight_init_std * np.random.randn(num_input_node, num_w1_node)
+        self.b1 = np.zeros(num_w1_node)
 
-    def predict(self, x) -> tuple[np.ndarray, np.ndarray]:
+    def predict(self, x: np.ndarray) -> np.ndarray:
         a1 = np.dot(x, self.W1) + self.b1
-        y = identity(a1)
-        t_predict = np.argmax(y, axis=1)
-        return y, t_predict
+        z = identity(a1)
+        y = softmax(z)
+        return y
 
-    def accuracy(self, x, t: np.ndarray) -> float:
-        _, t_predict = self.predict(x)
-        acc = accuracy(t, t_predict)
+    def accuracy(self, x: np.ndarray, t: np.ndarray) -> float:
+        y = self.predict(x)
+        t_predict = np.argmax(y, axis=1)
+        acc = np.sum(t == t_predict) / t.shape[0]
         return round(acc, 4)
     
     def loss(self, x, t: np.ndarray) -> float:
-        z, _ = self.predict(x)
-        y = softmax(z)
+        y = self.predict(x)
         return cross_entropy_error(y, t)
 
     def gradient(self, x, t) -> tuple[np.ndarray, np.ndarray]:
+        print('Calculating numerical gradient takes a while. Please be patient!')
         f = lambda W: self.loss(x, t)
-        print('Be patient! This might take a while...')
         self.W1_grad = numerical_gradient(self.W1, f)
         self.b1_grad = numerical_gradient(self.b1, f)
-        print('The gradients are ready!')
+        
         return self.W1_grad, self.b1_grad
     
-    def gradient_descent(self, x, t, learning_rate, step_num):
+    def gradient_descent(self, x, t, learning_rate, step_num):  
         for i in range(step_num):
             W1_grad_new, b1_grad_new = self.gradient(x, t)
             self.W1_grad -= learning_rate * W1_grad_new
