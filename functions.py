@@ -14,23 +14,40 @@ def softmax(x: np.ndarray) -> np.ndarray:
 def identity(x):
     return x
 
+# from class labels to one-hot representation
+
+def one_hot_encoding(x: np.ndarray, n_out_node) -> np.ndarray:
+    y = np.zeros(shape=(x.size, n_out_node))
+    y[np.arange(x.size), x] = 1
+    return y
+
+# training and validaton sets splitting
+
+def train_val_split(x: np.ndarray, y: np. ndarray, split_ratio: float):
+    '''
+    split_ratio: the ratio of the size of set validation set to the size of the training set
+    '''
+    mask = np.random.choice(a=x.shape[0], size=int(x.shape[0]*split_ratio), replace=False)
+    x_val, y_val = x[mask], y[mask]
+    x_train, y_train = x[np.setdiff1d(np.arange(x.shape[0]), mask)], y[np.setdiff1d(np.arange(x.shape[0]), mask)]
+    return x_train, y_train, x_val, y_val 
+
 # loss functions
 
 def mean_square_error(label, prediction):
     batch_size = label.shape[0]
     return (1/batch_size) * np.sum((label - prediction)**2)
 
-def cross_entropy_error(y, t):
+def cross_entropy_error(y, t) -> np.ndarray:
     if y.ndim == 1:
         y = y.reshape(1, y.size)
+    if t.ndim == 1:
         t = t.reshape(1, t.size)
-
-    if y.size == t.size:
-        t = np.argmax(t, axis = 1)
-
+    if y.ndim == t.ndim:
+        t = np.argmax(t, axis=1)
     delta = 1e-7
     batch_size = y.shape[0]
-    return -np.sum(np.log(y[np.arange(batch_size), t] + delta)) / batch_size
+    return -np.sum(np.log(y[np.arange(y.shape[0]), t] + delta)) / batch_size
 
 # accuracy functions
 
